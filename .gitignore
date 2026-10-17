@@ -1,0 +1,24 @@
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Environments
+venv/
+env/
+.env
+
+# Spyder/IDE settings
+.spyderproject/
+.spyderproject
+.idea/
+.vscode/
+
+# Local OS files & shortcuts
+Thumbs.db
+Desktop.ini
+*.lnk

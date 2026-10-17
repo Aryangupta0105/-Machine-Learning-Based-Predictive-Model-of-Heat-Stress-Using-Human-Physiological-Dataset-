@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermoregulatory Heat Stress Analytics | DIPAS-DRDO Clinical AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0f17;
+            --surface-1: #131b26;
+            --surface-2: #1b2636;
+            --border-subtle: #233144;
+            --border-focus: #3b82f6;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-primary: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.35);
+            --normo: #10b981;
+            --hyper: #ef4444;
+            --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 16px;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--surface-1);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-nav {
+            padding: 20px 32px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ef4444, #3b82f6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .scenario-toggles {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .scenario-toggles span {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        .btn-chip {
+            background: var(--surface-1);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-chip:hover {
+            border-color: var(--border-focus);
+            background: var(--surface-2);
+        }
+
+        /* Main Workspace Grid */
+        .main-workspace {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 0;
+        }
+
+        @media (max-width: 860px) {
+            .main-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Column: Form Controls */
+        .form-section {
+            padding: 32px;
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .group-header {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .group-header:first-of-type {
+            margin-top: 0;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 550px) {
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .field-unit {
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: border-color 0.2s;
+        }
+
+        .field-unit:focus-within {
+            border-color: var(--border-focus);
+        }
+
+        .field-unit label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .field-unit input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            font-family: var(--font-mono);
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 28px;
+            padding: 14px;
+            background: var(--accent-primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        /* Right Column: Dynamic Gauge & Diagnostic Report */
+        .analytics-section {
+            padding: 32px;
+            background: #0f1622;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .results-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .gauge-wrapper {
+            position: relative;
+            width: 220px;
+            height: 120px;
+            margin: 0 auto 10px;
+            overflow: hidden;
+        }
+
+        .gauge-svg {
+            width: 220px;
+            height: 220px;
+            transform: rotate(-180deg);
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: var(--surface-1);
+            stroke-width: 18;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: var(--normo);
+            stroke-width: 18;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s ease;
+        }
+
+        .gauge-needle-value {
+            position: absolute;
+            bottom: 4px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .gauge-needle-value .val {
+            font-size: 34px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: -1px;
+        }
+
+        .status-pill {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border: 1px solid transparent;
+        }
+
+        .status-normo {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--normo);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .status-hyper {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--hyper);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .diagnostic-statement {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .metric-specs {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .spec-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .spec-box span {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .spec-box strong {
+            font-size: 14px;
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <!-- Top Banner -->
+    <div class="top-nav">
+        <div class="brand-title">
+            <div class="brand-logo">🌡️</div>
+            <div class="brand-text">
+                <h1>Thermoregulatory AI Diagnostic System</h1>
+                <p>Non-Invasive Core Temperature (Tcore) Estimation & Hyperthermia Alert</p>
+            </div>
+        </div>
+        <div class="scenario-toggles">
+            <span>Pre-fill:</span>
+            <button class="btn-chip" onclick="loadScenario('normal')">Baseline</button>
+            <button class="btn-chip" onclick="loadScenario('hyper')">Heat Stress</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-workspace">
+        <!-- Input Form -->
+        <div class="form-section">
+            <form id="prediction-form">
+                <div class="group-header">Thermal Biometrics</div>
+                <div class="param-grid">
+                    <div class="field-unit">
+                        <label>Mean Tbody <span>(°C)</span></label>
+                        <input type="number" step="any" id="Mean_Tbody" placeholder="36.5" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Heat Exposure <span>(min)</span></label>
+                        <input type="number" step="any" id="Heat_exposure" placeholder="20" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Delta Change <span>(Δ)</span></label>
+                        <input type="number" step="any" id="change" placeholder="0.10" required>
+                    </div>
+                </div>
+
+                <div class="group-header">Hemodynamic State</div>
+                <div class="param-grid">
+                    <div class="field-unit">
+                        <label>Initial HR <span>(bpm)</span></label>
+                        <input type="number" step="any" id="HR_initial" placeholder="70" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Systolic BP <span>(mmHg)</span></label>
+                        <input type="number" step="any" id="SBP" placeholder="120" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Diastolic BP <span>(mmHg)</span></label>
+                        <input type="number" step="any" id="DBP" placeholder="80" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Mean Arterial BP <span>(MAP)</span></label>
+                        <input type="number" step="any" id="MAP" placeholder="93" required>
+                    </div>
+                </div>
+
+                <div class="group-header">Autonomic & Sudomotor Response</div>
+                <div class="param-grid">
+                    <div class="field-unit">
+                        <label>Skin Blood Flow <span>(LDF)</span></label>
+                        <input type="number" step="any" id="LDF" placeholder="110" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Local Sweat Rate <span>(LSR)</span></label>
+                        <input type="number" step="any" id="LSR" placeholder="0.5" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>Total Sweat Rate <span>(g/m²h)</span></label>
+                        <input type="number" step="any" id="Sweat_rate" placeholder="0.8" required>
+                    </div>
+                    <div class="field-unit">
+                        <label>SSNA Activity <span>(bursts)</span></label>
+                        <input type="number" step="any" id="SSNA" placeholder="18" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="run-btn">Run Physiological Inference</button>
+            </form>
+        </div>
+
+        <!-- Real-Time Output Panel -->
+        <div class="analytics-section">
+            <div class="results-card">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 600;">Predicted Core Temperature (Tcore)</span>
+                
+                <div class="gauge-wrapper">
+                    <svg class="gauge-svg" viewBox="0 0 100 100">
+                        <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="gauge-fill" id="gauge-arc" cx="50" cy="50" r="45"></circle>
+                    </svg>
+                    <div class="gauge-needle-value">
+                        <div class="val" id="tcore-val">--</div>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="status-pill status-normo" id="status-badge">Standby</span>
+                </div>
+
+                <div class="diagnostic-statement" id="clinical-diag">
+                    Enter subject telemetry readings or choose a pre-filled scenario to evaluate thermoregulatory equilibrium.
+                </div>
+            </div>
+
+            <!-- Model Verification Metrics -->
+            <div class="metric-specs">
+                <div class="spec-box">
+                    <span>Active Algorithm</span>
+                    <strong>Gradient Boosting</strong>
+                </div>
+                <div class="spec-box">
+                    <span>Validation Score</span>
+                    <strong style="color: var(--normo);">98.89% (R²)</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Quick-Fill Scenarios
+    function loadScenario(type) {
+        if (type === 'normal') {
+            document.getElementById('Mean_Tbody').value = 36.6;
+            document.getElementById('Heat_exposure').value = 15;
+            document.getElementById('change').value = 0.05;
+            document.getElementById('HR_initial').value = 68;
+            document.getElementById('SBP').value = 118;
+            document.getElementById('DBP').value = 78;
+            document.getElementById('MAP').value = 91.3;
+            document.getElementById('LDF').value = 105;
+            document.getElementById('LSR').value = 0.42;
+            document.getElementById('Sweat_rate').value = 0.70;
+            document.getElementById('SSNA').value = 16.5;
+        } else {
+            document.getElementById('Mean_Tbody').value = 38.4;
+            document.getElementById('Heat_exposure').value = 75;
+            document.getElementById('change').value = 1.35;
+            document.getElementById('HR_initial').value = 125;
+            document.getElementById('SBP').value = 142;
+            document.getElementById('DBP').value = 88;
+            document.getElementById('MAP').value = 106.0;
+            document.getElementById('LDF').value = 240;
+            document.getElementById('LSR').value = 1.85;
+            document.getElementById('Sweat_rate').value = 2.40;
+            document.getElementById('SSNA').value = 42.0;
+        }
+    }
+
+    // Form Submit & Live Inference
+    document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('run-btn');
+        btn.innerText = "Processing Inference...";
+        btn.disabled = true;
+
+        const payload = {
+            Mean_Tbody: document.getElementById('Mean_Tbody').value,
+            LSR: document.getElementById('LSR').value,
+            LDF: document.getElementById('LDF').value,
+            HR_initial: document.getElementById('HR_initial').value,
+            SBP: document.getElementById('SBP').value,
+            DBP: document.getElementById('DBP').value,
+            MAP: document.getElementById('MAP').value,
+            SSNA: document.getElementById('SSNA').value,
+            Heat_exposure: document.getElementById('Heat_exposure').value,
+            Sweat_rate: document.getElementById('Sweat_rate').value,
+            change: document.getElementById('change').value
+        };
+
+        try {
+            const res = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                const tcore = parseFloat(data.tcore);
+                const isHyper = data.status === "Hyperthermic";
+
+                // Update text values
+                document.getElementById('tcore-val').innerText = `${tcore.toFixed(2)}°C`;
+                
+                // Update badge and statement
+                const badge = document.getElementById('status-badge');
+                badge.innerText = data.status;
+                badge.className = `status-pill ${isHyper ? 'status-hyper' : 'status-normo'}`;
+
+                document.getElementById('clinical-diag').innerText = isHyper
+                    ? "Warning: Subject core body temperature is exceeding safe clinical thresholds (≥ 38.0°C). Tipping point reached. Active cooling intervention recommended."
+                    : "Thermoregulatory equilibrium maintained. Subject core body temperature remains within safe operational boundaries.";
+
+                // Animate Arc Gauge (Scale: 36.0°C to 40.0°C -> 0 to 100%)
+                const minT = 36.0;
+                const maxT = 40.0;
+                const clamped = Math.min(Math.max(tcore, minT), maxT);
+                const pct = (clamped - minT) / (maxT - minT);
+                
+                // Full half-circle circumference = 283
+                const offset = 283 - (pct * 283 * 0.5); 
+                const arc = document.getElementById('gauge-arc');
+                arc.style.strokeDashoffset = offset;
+                arc.style.stroke = isHyper ? 'var(--hyper)' : 'var(--normo)';
+            } else {
+                alert("Server error: " + data.error);
+            }
+        } catch (err) {
+            alert("Could not reach backend API at http://127.0.0.1:5005. Make sure app.py is running!");
+        } finally {
+            btn.innerText = "Run Physiological Inference";
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
