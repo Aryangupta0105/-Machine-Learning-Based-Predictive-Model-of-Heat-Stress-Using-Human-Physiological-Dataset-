@@ -4,7 +4,11 @@ import numpy as np
 
 app = Flask(__name__)
 
-MODEL_PATH = r'C:\Users\candi\Desktop\Heat_Stress_App\model_gb.pkl'
+import os
+import pickle
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'model_gb.pkl')
 
 with open(MODEL_PATH, 'rb') as file:
     model = pickle.load(file)
