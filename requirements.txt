@@ -1,5 +1,5 @@
 flask
-scikit-learn==1.2.2
+scikit-learn==<PASTE_EXACT_VERSION_HERE>
 xgboost
 pandas
 numpy<2.0.0
